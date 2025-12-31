@@ -57,6 +57,31 @@ vector<string> GetWords() {
     return words;
 }
 
+bool IsValidGuess(const string& guess, vector<string> guesses) {
+    if (guess.size() != WORD_LEN) {
+        cout << format("Guess must be {} characters long.", WORD_LEN) << endl;
+        return false;
+    }
+    if (std::ranges::find(guesses, guess) != guesses.end()) {
+        cout << "You have already guessed " << guess << "!" << endl;
+        return false;
+    }
+    return true;
+}
+
+void PrintGuess(const Status guessStatus[], const string& guess) {
+    for (int i = 0; i < WORD_LEN; i++) {
+        if (guessStatus[i] == GREEN) {
+            cout << C_GREEN << guess[i] << C_RESET;
+        } else if (guessStatus[i] == YELLOW) {
+            cout << C_YELLOW << guess[i] << C_RESET;
+        } else {
+            cout << guess[i];
+        }
+    }
+    cout << endl;
+}
+
 int main() {
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -79,15 +104,8 @@ int main() {
             do {
                 cout << "> ";
                 cin >> guess;
-                if (guess.size() != WORD_LEN) {
-                    cout << format("Guess must be {} characters long.", WORD_LEN) << endl;
-                    guessValid = false;
-                }
-                else if (std::ranges::find(guesses, guess) != guesses.end()) {
-                    cout << "You have already guessed " << guess << "!" << endl;
-                    guessValid = false;
-                }
-                else {
+                guessValid = false;
+                if (IsValidGuess(guess, guesses)) {
                     guessValid = true;
                     guesses.push_back(guess);
                     #ifdef _WIN32
@@ -96,16 +114,7 @@ int main() {
                         system("clear");
                     #endif
                     for (int j = 0; j < guesses.size()-1; j++) {
-                        for (int i = 0; i < WORD_LEN; i++) {
-                            if (guessStatuses[j][i] == GREEN) {
-                                cout << C_GREEN << guesses[j][i] << C_RESET;
-                            } else if (guessStatuses[j][i] == YELLOW) {
-                                cout << C_YELLOW << guesses[j][i] << C_RESET;
-                            } else {
-                                cout << guesses[j][i];
-                            }
-                        }
-                        cout << endl;
+                        PrintGuess(guessStatuses[j].data(), guesses[j]);
                     }
                 }
             } while (!guessValid);
@@ -128,16 +137,7 @@ int main() {
                         guessStatuses[guesses.size()-1][j] = YELLOW;
                     }
                 }
-                for (int i = 0; i < WORD_LEN; i++) {
-                    if (guessStatuses[guesses.size()-1][i] == GREEN) {
-                        cout << C_GREEN << guess[i] << C_RESET;
-                    } else if (guessStatuses[guesses.size()-1][i] == YELLOW) {
-                        cout << C_YELLOW << guess[i] << C_RESET;
-                    } else {
-                        cout << guess[i];
-                    }
-                }
-                cout << endl;
+                PrintGuess(guessStatuses[guesses.size()-1].data(), guess);
                 guessed = false;
             }
         } while (!guessed);
