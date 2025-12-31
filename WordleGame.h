@@ -26,6 +26,9 @@ class WordleGame {
 public:
     explicit WordleGame(const std::string &givenWord) {
         word = givenWord;
+        for (char i : word) {
+            letterFreqPerm[i]++;
+        }
     }
     void play();
 };

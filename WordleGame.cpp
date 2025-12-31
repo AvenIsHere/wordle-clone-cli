@@ -64,7 +64,7 @@ void WordleGame::ProcessGuess() {
         guessStatuses[guesses.size()-1] = {GRAY, GRAY, GRAY, GRAY, GRAY};
         for (int j = 0; j < WORD_LEN; j++) {
             if (guess[j] == word[j]) {
-                letterFreq.at(guess[j])--;
+                letterFreq[guess[j]]--;
                 guessStatuses[guesses.size()-1][j] = GREEN;
             }
         }
@@ -81,9 +81,6 @@ void WordleGame::ProcessGuess() {
 }
 
 void WordleGame::play() {
-    for (char i : word) {
-        letterFreqPerm[i]++;
-    }
     do {
         if (guesses.size() == GUESS_COUNT) {
             std::cout << "Out of luck! The word was: " << word << std::endl;
