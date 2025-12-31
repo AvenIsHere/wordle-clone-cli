@@ -2,6 +2,7 @@
 #include <iostream>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
+#include <cstdlib>
 
 using std::string;
 using std::vector;
@@ -16,6 +17,7 @@ using json = nlohmann::json;
 
 constexpr int WORD_COUNT = 5;
 constexpr int WORD_LEN = 5;
+constexpr int GUESS_COUNT = 6;
 
 const string C_RESET  = "\033[0m";
 const string C_GREEN  = "\033[32m";
@@ -65,10 +67,11 @@ int main() {
         for (char i : word) {
             letterFreqPerm[i]++;
         }
+        std::array<std::array<Status, WORD_LEN>, GUESS_COUNT> guessStatuses{};
         do {
             map<char, int> letterFreq = letterFreqPerm;
             bool guessValid;
-            if (guesses.size() == 6) {
+            if (guesses.size() == GUESS_COUNT) {
                 cout << "Out of luck! The word was: " << word << endl;
                 break;
             }
@@ -87,6 +90,23 @@ int main() {
                 else {
                     guessValid = true;
                     guesses.push_back(guess);
+                    #ifdef _WIN32
+                        system("cls");
+                    #else
+                        system("clear");
+                    #endif
+                    for (int j = 0; j < guesses.size()-1; j++) {
+                        for (int i = 0; i < WORD_LEN; i++) {
+                            if (guessStatuses[j][i] == GREEN) {
+                                cout << C_GREEN << guesses[j][i] << C_RESET;
+                            } else if (guessStatuses[j][i] == YELLOW) {
+                                cout << C_YELLOW << guesses[j][i] << C_RESET;
+                            } else {
+                                cout << guesses[j][i];
+                            }
+                        }
+                        cout << endl;
+                    }
                 }
             } while (!guessValid);
             if (guess == word) {
@@ -94,25 +114,24 @@ int main() {
                 guessed = true;
             }
             else {
-                Status guessStatus[WORD_LEN] = {GRAY, GRAY, GRAY, GRAY, GRAY};
-                cout << "Letters in word: ";
+                guessStatuses[guesses.size()-1] = {GRAY, GRAY, GRAY, GRAY, GRAY};
                 for (int j = 0; j < WORD_LEN; j++) {
                     if (guess[j] == word[j]) {
                         letterFreq.at(guess[j])--;
-                        guessStatus[j] = GREEN;
+                        guessStatuses[guesses.size()-1][j] = GREEN;
                     }
                 }
                 for (int j = 0; j < WORD_LEN; j++) {
-                    if (guessStatus[j] == GREEN) continue;
+                    if (guessStatuses[guesses.size()-1][j] == GREEN) continue;
                     if (letterFreq.contains(guess[j]) && letterFreq[guess[j]] > 0) {
                         letterFreq[guess[j]]--;
-                        guessStatus[j] = YELLOW;
+                        guessStatuses[guesses.size()-1][j] = YELLOW;
                     }
                 }
                 for (int i = 0; i < WORD_LEN; i++) {
-                    if (guessStatus[i] == GREEN) {
+                    if (guessStatuses[guesses.size()-1][i] == GREEN) {
                         cout << C_GREEN << guess[i] << C_RESET;
-                    } else if (guessStatus[i] == YELLOW) {
+                    } else if (guessStatuses[guesses.size()-1][i] == YELLOW) {
                         cout << C_YELLOW << guess[i] << C_RESET;
                     } else {
                         cout << guess[i];
